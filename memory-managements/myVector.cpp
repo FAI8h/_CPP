@@ -1,24 +1,24 @@
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
 class MyVector{
 private:
-    int *data;
+    unique_ptr<int[]> data;
     int size;
     int capacity;
     
     public:
-    MyVector(int size = 0, int capacity = 2){
-        this->size = size;
-        this->capacity = capacity;
-        data = new int[capacity];
-    };
+    MyVector(int size = 0, int capacity = 2) 
+        : size(size), capacity(capacity){
+            data = make_unique<int[]>(capacity);
+        };
 
     //* this is copy constructor
     MyVector(const MyVector &other)
         : size(other.size), capacity(other.capacity){
-            data = new int[other.capacity];
+            data = make_unique<int[]>(other.capacity);
 
         for(int i = 0; i < other.size; i++){
             data[i] = other.data[i];
@@ -28,11 +28,10 @@ private:
     //* this is copy assignment
     MyVector &operator=(const MyVector &other) {
         if(this == &other) return *this;
-        delete[] data;
 
         this->capacity = other.capacity;
         this->size = other.size;
-        data = new int[other.capacity];
+        data = make_unique<int[]>(other.capacity);
 
         for (int i = 0; i < other.size; i++){
             data[i] = other.data[i];
@@ -42,12 +41,7 @@ private:
     }
 
     //* this is move constructor
-    MyVector(MyVector &&other){
-        this->capacity = other.capacity;
-        this->size = other.size;
-        this->data = other.data;
-
-        other.data = nullptr;
+    MyVector(MyVector &&other): data(move(other.data)),  size(other.size), capacity(other.capacity){
         other.size = 0;
         other.capacity = 0;
     }
@@ -56,13 +50,11 @@ private:
     MyVector& operator=(MyVector &&other){
         if(this == &other) return *this;
 
-        delete[] data;
-        
+        data = move(other.data);
+
         this->capacity = other.capacity;
         this->size = other.size;
-        this->data = other.data;
 
-        other.data = nullptr;
         other.size = 0;
         other.capacity = 0;
 
@@ -79,25 +71,18 @@ private:
     void push_back(int val){
         if(size == capacity){
             capacity = capacity * 2;
-            int *newArr = new int[capacity];
+            auto newArr = make_unique<int[]>(capacity);
 
             for (int i = 0; i < size; i++){
                 newArr[i] = data[i];
             }
-
-            delete[] data;
-
-            data = newArr;
+            data = move(newArr);
         }
         data[size] = val;
         size++;
     }
 
-
-
-    ~MyVector(){
-        delete[] data;
-    };
+    ~MyVector() = default;
 };
 
 MyVector createVector(){

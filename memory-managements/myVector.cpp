@@ -6,15 +6,16 @@ class MyVector{
 private:
     int *data;
     int size;
+    int capacity;
     
     public:
-    int capacity;
     MyVector(int size = 0, int capacity = 2){
         this->size = size;
         this->capacity = capacity;
         data = new int[capacity];
     };
 
+    //* this is copy constructor
     MyVector(const MyVector &other)
         : size(other.size), capacity(other.capacity){
             data = new int[other.capacity];
@@ -24,14 +25,7 @@ private:
         }
     }
 
-    MyVector(MyVector &&other){
-        this->data = other.data;
-
-        other.data = nullptr;
-
-        delete[] other.data;
-    }
-
+    //* this is copy assignment
     MyVector &operator=(const MyVector &other) {
         if(this == &other) return *this;
         delete[] data;
@@ -46,6 +40,41 @@ private:
 
         return *this;
     }
+
+    //* this is move constructor
+    MyVector(MyVector &&other){
+        this->capacity = other.capacity;
+        this->size = other.size;
+        this->data = other.data;
+
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+    }
+    
+    //* this is move assignment
+    MyVector& operator=(MyVector &&other){
+        if(this == &other) return *this;
+
+        delete[] data;
+        
+        this->capacity = other.capacity;
+        this->size = other.size;
+        this->data = other.data;
+
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+
+        return *this;
+    }
+
+    //* this is to able to use [], like v[0]
+    int& operator[](int index){
+        return data[index];
+    }
+
+
 
     void push_back(int val){
         if(size == capacity){
@@ -63,9 +92,7 @@ private:
         data[size] = val;
         size++;
     }
-    int& operator[](int index){
-        return data[index];
-    }
+
 
 
     ~MyVector(){
@@ -78,21 +105,16 @@ MyVector createVector(){
     temp.push_back(10);
     temp.push_back(20);
 
+    for (int i = 0; i < 5; i++){
+        // cout << "data a : "<<a[i] << " addr a : "<< &a[i] << " data b : "<< b[i] << " addr b : " << &b[i]<< endl;
+        cout << "data temp : "<<temp[i] << " addr temp : "<< &temp[i] << endl;
+    }
     return temp;
 }
 
 int main(){
 
-
-    MyVector a;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    a.push_back(4);
-    a.push_back(5);
-
-
-    a = a;
+    MyVector a = createVector();
 
     for (int i = 0; i < 5; i++){
         // cout << "data a : "<<a[i] << " addr a : "<< &a[i] << " data b : "<< b[i] << " addr b : " << &b[i]<< endl;

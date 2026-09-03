@@ -40,17 +40,17 @@ private:
         return *this;
     }
 
-    //* this is move constructor
-    MyVector(MyVector &&other): data(move(other.data)),  size(other.size), capacity(other.capacity){
+    //* this is std::move constructor
+    MyVector(MyVector &&other): data(std::move(other.data)),  size(other.size), capacity(other.capacity){
         other.size = 0;
         other.capacity = 0;
     }
     
-    //* this is move assignment
+    //* this is std::move assignment
     MyVector& operator=(MyVector &&other){
         if(this == &other) return *this;
 
-        data = move(other.data);
+        data = std::move(other.data);
 
         this->capacity = other.capacity;
         this->size = other.size;
@@ -76,7 +76,7 @@ private:
             for (int i = 0; i < size; i++){
                 newArr[i] = data[i];
             }
-            data = move(newArr);
+            data = std::move(newArr);
         }
         data[size] = val;
         size++;

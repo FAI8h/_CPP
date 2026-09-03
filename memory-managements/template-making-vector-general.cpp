@@ -27,9 +27,9 @@ public:
             auto newArr = make_unique<T[]>(capacity);
 
             for (int i = 0; i < size; i++){
-                newArr[i] = move(data[i]);
+                newArr[i] = std::move(data[i]);
             }
-            data = move(newArr);
+            data = std::move(newArr);
         }
         data[size] = val;
         size++;

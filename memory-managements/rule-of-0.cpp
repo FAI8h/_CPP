@@ -27,7 +27,7 @@ public:
             for (int i = 0; i < size; i++){
                 newArr[i] = data[i];
             }
-            data = move(newArr);
+            data = std::move(newArr);
         }
         data[size] = val;
         size++;
@@ -42,7 +42,7 @@ int main(){
     a.push_back(3);
     a.push_back(4);
 
-    MyVector b = move(a);
+    MyVector b = std::move(a);
 
     for (int i = 0; i < 4; i++){
         cout << "data b : "<<b[i] << " addr b : "<< &b[i] <<endl;

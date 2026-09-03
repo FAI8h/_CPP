@@ -14,30 +14,7 @@ public:
             data = make_unique<int[]>(capacity);
         };
 
-    //* this is copy constructor
-    MyVector(const MyVector &other)
-        : size(other.size), capacity(other.capacity){
-            data = make_unique<int[]>(other.capacity);
 
-        for(int i = 0; i < other.size; i++){
-            data[i] = other.data[i];
-        }
-    }
-
-    //* this is copy assignment
-    MyVector &operator=(const MyVector &other) {
-        if(this == &other) return *this;
-
-        this->capacity = other.capacity;
-        this->size = other.size;
-        data = make_unique<int[]>(other.capacity);
-
-        for (int i = 0; i < other.size; i++){
-            data[i] = other.data[i];
-        }
-
-        return *this;
-    }
     int& operator[](int index){
         return data[index];
     }
@@ -61,11 +38,14 @@ public:
 int main(){
     MyVector a;
     a.push_back(1);
+    a.push_back(2);
+    a.push_back(3);
+    a.push_back(4);
 
-    MyVector b = a;
+    MyVector b = move(a);
 
-    for (int i = 0; i < 5; i++){
-        cout << "data a : "<<a[i] << " addr a : "<< &a[i] << "data b : "<<b[i] << " addr b : "<< &b[i] <<endl;
+    for (int i = 0; i < 4; i++){
+        cout << "data b : "<<b[i] << " addr b : "<< &b[i] <<endl;
     }
 
         return 0;

@@ -55,7 +55,18 @@ public:
         allocator.deallocate(data);
     }
 
-    
+    //* copy constructor
+    MyVector(const MyVector & other){
+        this->size = other.size;
+        this->capacity = other.capacity;
+
+        data = allocator.allocate(other.capacity);
+
+        for (int i = 0; i < other.size; i++){
+            allocator.construct(&data[i], other.data[i]);
+        }
+
+    }
 
     void push_back(T val){
         if(size == capacity){

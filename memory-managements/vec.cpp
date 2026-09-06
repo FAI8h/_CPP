@@ -94,6 +94,23 @@ public:
         return *this;
     }
 
+
+    //* Move constructor
+    MyVector(MyVector && other) noexcept {
+        this->size = other.size;
+        this->capacity = other.capacity;
+
+        this->data = other.data;
+        /*
+         * this->data = other.data // this->data starts pointing to other.data and then other.data = nullptr so the ownership transfered to this->data
+         * && means this object is and rvalue and about to die any way so to save computation we just stole the ownership of that -> (other) 
+         *  noexcept is for fall back if data is croupted any where while moving then it fall backs to copying rather than throwing error
+        */
+        other.data = nullptr;
+        other.size = 0;
+        other.capacity = 0;
+    }
+
     void push_back(T val){
         if(size == capacity){
             capacity = capacity * 2;

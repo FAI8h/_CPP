@@ -111,6 +111,26 @@ public:
         other.capacity = 0;
     }
 
+    //* Move assignment
+    MyVector& operator=(MyVector && other) noexcept {
+        if(this == &other) return *this;
+
+        for (int i = 0; i < size; i++){
+            allocator.destroy(&data[i]);
+        }
+        allocator.deallocate(data);
+
+        size = other.size;
+        capacity = other.capacity;
+        data = other.data;
+
+        other.data = nullptr;
+        other.capacity = 0;
+        other.size = 0;
+
+        return *this;
+    }
+
     void push_back(T val){
         if(size == capacity){
             capacity = capacity * 2;

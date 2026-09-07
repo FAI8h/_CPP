@@ -191,7 +191,16 @@ public:
         allocator.construct(&data[size], std::forward<Args>(args)...);
         size++;
     }
+    
 
+    void pop_back(){
+        if (size == 0){
+            return;
+        }
+
+        allocator.destroy(&data[size - 1]);
+        size--;
+    }
 };
 
 int main(){
@@ -200,7 +209,8 @@ int main(){
     v.push_back(10);
     v.push_back(20);
 
-    cout << v[0] << endl;
+    v.pop_back();
+    cout << v[1] << endl;
 
     return 0;
 }

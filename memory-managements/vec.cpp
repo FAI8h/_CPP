@@ -181,6 +181,17 @@ public:
         allocator.construct(&data[size], val);
         size++;
     }
+
+    template<typename... Args>
+    void emplace_back(Args && ...args){
+        if(size == capacity){
+            grow();
+        }
+
+        allocator.construct(&data[size], std::forward<Args>(args)...);
+        size++;
+    }
+
 };
 
 int main(){

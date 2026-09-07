@@ -36,6 +36,42 @@ private:
     T *data;
     size_t size;
     size_t capacity;
+
+    void grow(){
+    size_t newCap = this->capacity * 2;
+    auto newArr = allocator.allocate(newCap);
+
+    int i = 0;
+    try{
+        for (; i < size; i++){
+            allocator.construct(&newArr[i], std::move(data[i]));
+        }
+    }catch(const std::exception& e){
+
+        for (int j = 0; j < i; j++){
+            allocator.destroy(&newArr[j]);
+        }
+        allocator.deallocate(newArr);
+
+        std::cerr << e.what() << '\n';
+        throw;
+    }
+
+    /*
+        * int i is the tracker if any thing goes wrong , i points to the exact point
+        * when an error occurs we can undo the allocation of newArray(temporary array) , moving less that i times
+        * and at last throw the error , so that exuction stops ,if not stopped the original data that havnt moved yet will get destroyed 
+    */
+
+    for (int i = 0; i < size; i++){
+        allocator.destroy(&data[i]);
+    }
+
+    allocator.deallocate(data);
+    this->capacity = newCap;
+    data = newArr;
+    }
+
 public:
     MyVector(int capacity = 2) 
         : size(0), capacity(capacity){
@@ -133,76 +169,14 @@ public:
 
     void push_back(T && val){
         if(size == capacity){
-            size_t newCap = this->capacity * 2;
-            auto newArr = allocator.allocate(newCap);
-
-            int i = 0;
-            try{
-                for (; i < size; i++){
-                    allocator.construct(&newArr[i], std::move(data[i]));
-                }
-            }catch(const std::exception& e){
-
-                for (int j = 0; j < i; j++){
-                    allocator.destroy(&newArr[j]);
-                }
-                allocator.deallocate(newArr);
-
-                std::cerr << e.what() << '\n';
-                throw;
-            }
-
-            /*
-             * int i is the tracker if any thing goes wrong , i points to the exact point
-             * when an error occurs we can undo the allocation of newArray(temporary array) , moving less that i times
-             * and at last throw the error , so that exuction stops ,if not stopped the original data that havnt moved yet will get destroyed 
-            */
-
-            for (int i = 0; i < size; i++){
-                allocator.destroy(&data[i]);
-            }
-
-            allocator.deallocate(data);
-            this->capacity = newCap;
-            data = newArr;
+            grow();
         }
         allocator.construct(&data[size], std::move(val));
         size++;
     }
     void push_back(const T & val){
         if(size == capacity){
-            size_t newCap = this->capacity * 2;
-            auto newArr = allocator.allocate(newCap);
-
-            int i = 0;
-            try{
-                for (; i < size; i++){
-                    allocator.construct(&newArr[i], std::move(data[i]));
-                }
-            }catch(const std::exception& e){
-
-                for (int j = 0; j < i; j++){
-                    allocator.destroy(&newArr[j]);
-                }
-                allocator.deallocate(newArr);
-
-                std::cerr << e.what() << '\n';
-                throw;
-            }
-
-            /*
-             * int i is the tracker if any thing goes wrong , i points to the exact point
-             * when an error occurs we can undo the allocation of newArray(temporary array) , moving less that i times
-             * and at last throw the error , so that exuction stops ,if not stopped the original data that havnt moved yet will get destroyed 
-            */
-
-            for (int i = 0; i < size; i++){
-                allocator.destroy(&data[i]);
-            }
-
-            allocator.deallocate(data);
-            this->capacity = newCap;
-            data = newArr;
+            grow();
         }
         allocator.construct(&data[size], val);
         size++;

@@ -219,7 +219,10 @@ int main(){
     v.push_back(30);
 
     v.pop_back();
-    for(auto &x : v){
+    auto it = v.begin();
+    auto end_it = v.end();
+    for (; it != end_it; ++it) {
+        auto& x = *it;
         cout << x << " ";
     }
     cout << endl;

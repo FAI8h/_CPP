@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 
 using namespace  std;
 
@@ -36,6 +37,7 @@ private:
     T *data;
     size_t size;
     size_t capacity;
+    using iterator = T *;
 
     void grow(){
     size_t newCap = this->capacity * 2;
@@ -79,7 +81,13 @@ public:
         };
 
 
+    iterator begin() {return data;};
+    iterator end() { return data + size; };
+
     T& operator[](int index){
+        if(index < 0 || index >= size){
+            throw std::out_of_range("Out of range access");
+        }
         return data[index];
     }
 
@@ -208,9 +216,13 @@ int main(){
 
     v.push_back(10);
     v.push_back(20);
+    v.push_back(30);
 
     v.pop_back();
-    cout << v[1] << endl;
+    for(auto &x : v){
+        cout << x << " ";
+    }
+    cout << endl;
 
     return 0;
 }

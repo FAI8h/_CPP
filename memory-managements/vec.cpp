@@ -114,30 +114,42 @@ public:
 
     //* copy assignment
     MyVector &operator=(const MyVector & other){
-        if(this == &other) return *this;
-
-        for (int i = 0; i < size; i++){
-            allocator.destroy(&data[i]);
-        }
-        allocator.deallocate(data);
-
         /*
          * clarification on why we need to destory old object and deallocate the memory 
          * if the copy assignment is being called for already assigned object then we have to clear the object copy the new one entierly
          * now on why deallocate , Why not use the freed object that we just did , cause what if the object we are copying from has larger capacity and size (!* THINK ABOUT IT)  
         */
-        size = other.size;
-        capacity = other.capacity;
+        if(this == &other) return *this;
 
-        data = allocator.allocate(other.capacity);
+        auto newArr = allocator.allocate(other.capacity);
 
-        for (int i = 0; i < other.size; i++){
-            allocator.construct(&data[i], other.data[i]);
+        int i = 0;
+        try{
+            for (; i < other.size; i++){
+                allocator.construct(&newArr[i], other.data[i]);
+            }
         }
+        catch(const std::exception& e){
+            for (int j = 0; j < i; j++){
+                allocator.destroy(&newArr[j]);
+            }
+
+            allocator.deallocate(newArr);
+            std::cerr << e.what() << '\n';
+            throw;
+        }
+        i = 0;
+        for (; i < size; i++){
+            allocator.destroy(&data[i]);
+        }
+        allocator.deallocate(data);
+
+        this->data = newArr;
+        this->capacity = other.capacity;
+        this->size = other.size;
 
         return *this;
     }
-
 
     //* Move constructor
     MyVector(MyVector && other) noexcept {

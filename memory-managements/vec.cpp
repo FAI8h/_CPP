@@ -1,3 +1,4 @@
+#include <exception>
 #include <iostream>
 #include <stdexcept>
 
@@ -101,15 +102,25 @@ public:
 
     //* copy constructor
     MyVector(const MyVector & other){
-        this->size = other.size;
-        this->capacity = other.capacity;
+        
+        this->data = allocator.allocate(other.capacity);
 
-        data = allocator.allocate(other.capacity);
-
-        for (int i = 0; i < other.size; i++){
-            allocator.construct(&data[i], other.data[i]);
+        int i = 0;
+        try{
+            for (; i < other.size; i++){
+                allocator.construct(&data[i], other.data[i]);
+            }
+        }catch(const std::exception& e){
+            for (int j = 0; j < i; j++){
+                allocator.destroy(&data[j]);
+            }
+            allocator.deallocate(data);
+            std::cerr << e.what() << '\n';
+            throw;
         }
 
+        this->size = other.size;
+        this->capacity = other.capacity;
     }
 
     //* copy assignment

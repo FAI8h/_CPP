@@ -77,7 +77,11 @@ private:
 
 public:
     MyVector(int capacity = 2) 
-        : size(0), capacity(capacity){
+        : size(0){
+            if (capacity < 1){
+                throw std::invalid_argument("capacity must be a positive");
+            }
+            this->capacity = capacity;
             data = allocator.allocate(capacity);
         };
 
@@ -235,13 +239,10 @@ public:
 };
 
 int main(){
-    MyVector<int> v;
+    MyVector<int> v(0);
 
     v.push_back(10);
-    v.push_back(20);
-    v.push_back(30);
 
-    v.pop_back();
     auto it = v.begin();
     auto end_it = v.end();
     for (; it != end_it; ++it) {

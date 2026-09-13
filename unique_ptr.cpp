@@ -40,18 +40,26 @@ public:
 
         return *this;
     }
+
+    T& operator*() const {
+        return *ptr;
+    }
+
+    T* operator->() const {
+        return ptr;
+    }
+
 };
 
 int main(){
 
-    UniquePtr<int> p1;
+    UniquePtr<int> p1(new int(40));
     UniquePtr<int> p2;
-    cout << "addr of p1 : " << &p1 << endl;
-    cout << "addr of p2 : " << &p2 << endl;
-    p1 = std::move(p2);
+    cout << "addr of p1 : " << *p1 << endl;
+    p2 = std::move(p1);
 
     cout << "moved p2 "<< endl;
-    cout << "addr of p1 : " << &p1 << endl;
+    cout << "addr of p2 : " << &p1 << endl;
     cout << "addr of p2 : " << &p2 << endl;
 
     return 0;

@@ -49,18 +49,29 @@ public:
         return ptr;
     }
 
+    T* get() const {
+        return ptr;
+    }
+
+    T* release() {
+        T *temp = this->ptr;
+
+        this->ptr = nullptr;
+        return temp;
+    }
 };
 
 int main(){
 
     UniquePtr<int> p1(new int(40));
     UniquePtr<int> p2;
-    cout << "addr of p1 : " << *p1 << endl;
+    // cout << "addr of p1 : " << *p1 << endl;
     p2 = std::move(p1);
+    cout << p1.get() << endl;
 
     cout << "moved p2 "<< endl;
-    cout << "addr of p2 : " << &p1 << endl;
-    cout << "addr of p2 : " << &p2 << endl;
+    // cout << "addr of p2 : " << &p1 << endl;
+    // cout << "addr of p2 : " << &p2 << endl;
 
     return 0;
 }

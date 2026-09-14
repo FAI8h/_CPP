@@ -10,6 +10,8 @@ private:
     int *refCount;
 
     void release(){
+        if(this->refCount == nullptr) return; //* this prevents the seg* fault when releasing on a null refCount
+
         (*this->refCount)--;
         if(*this->refCount <= 0){
             delete this->refCount;
@@ -81,9 +83,34 @@ public:
     }
 };
 
+//* test case
+struct Widget {
+    int id;
+    Widget(int i) : id(i) { cout << "Widget " << id << " constructed" << endl; }
+    ~Widget() { cout << "Widget " << id << " DESTROYED" << endl; }
+};
 
 int main(){
-    SharedPtr<int> s1(new int(5));
-    // cout << s1. << endl;
+    cout << "Test 1 --- Basic shared count tracking  \n" << endl;
+    SharedPtr<Widget> a(new Widget(1));
+    {
+        SharedPtr<Widget> b = a;
+        cout << "count after copying a = " << a.use_count() << " (must be 2) "<< endl;
+        cout << "b->id = " << b->id << endl;
+        cout << "b's scope ends after scope Shared count should be back to 1"<< endl;
+    }
+    cout << "Shared count after scope ends = " << a.use_count() << endl;
+
+    cout << "\n--- Test 2: copy assignment releases old object ---" << endl;
+    SharedPtr<Widget> c(new Widget(2));
+    c = a; // c should release Widget 2, then share Widget 1 with a
+    cout << "count after c = a: " << a.use_count() << " (should be 2)" << endl;
+
+    cout << "\n--- Test 3: move doesn't change count ---" << endl;
+    SharedPtr<Widget> d = std::move(c);
+    cout << "count after move: " << a.use_count() << " (should still be 2, c moved-from, doesn't count)" << endl;
+    cout << "d use_count: " << d.use_count() << endl;
+
+    cout << "\n--- end of main, remaining SharedPtrs (a, d) about to destruct ---" << endl;
     return 0;
 }

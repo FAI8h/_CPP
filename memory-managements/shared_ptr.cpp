@@ -44,7 +44,43 @@ public:
 
         return *this;
     }
+
+    //* move Constructor
+    SharedPtr(SharedPtr&& other) noexcept {
+        this->ptr = other.ptr;
+        this->refCount = other.refCount;
+
+        other.ptr = nullptr;
+        other.refCount = nullptr;
+    }
+
+    //* move Assignment
+    SharedPtr& operator=(SharedPtr&& other) noexcept {
+        if(this == &other) return *this;
+        release();
+
+        this->ptr = other.ptr;
+        this->refCount = other.refCount;
+
+        other.ptr = nullptr;
+        other.refCount = nullptr;
+
+        return *this;
+    }
+
+    T& operator*() const {
+        return *ptr;
+    }
+
+    T* operator->() const {
+        return ptr;
+    }
+
+    int use_count() const {
+        return *refCount;
+    }
 };
+
 
 int main(){
     SharedPtr<int> s1(new int(5));

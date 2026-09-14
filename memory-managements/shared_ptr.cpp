@@ -9,21 +9,41 @@ private:
     T *ptr;
     int *refCount;
 
+    void release(){
+        (*this->refCount)--;
+        if(*this->refCount <= 0){
+            delete this->refCount;
+            delete this->ptr;
+        }
+    }
+
 public:
     explicit SharedPtr(T* p = nullptr){
         this->ptr = p;
         this->refCount = new int(1);
     }
 
-    ~SharedPtr(){
-        (*this->refCount)--;
-        
-        if(*refCount <= 0){
-            delete this->refCount;
-            delete this->ptr;
-        }
+    ~SharedPtr() { release(); };
+
+    //* copy Constructor
+    SharedPtr(const SharedPtr& other){
+        this->ptr = other.ptr;
+        this->refCount = other.refCount;
+        (*this->refCount)++;
     }
 
+    //* copy Assignment
+    SharedPtr& operator=(const SharedPtr& other){
+        if(this == &other) return *this;
+
+        release();
+
+        this->ptr = other.ptr;
+        this->refCount = other.refCount;
+        (*this->refCount)++;
+
+        return *this;
+    }
 };
 
 int main(){

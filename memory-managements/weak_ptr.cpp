@@ -30,6 +30,14 @@ private:
         }
     }
 
+    SharedPtr(T* p, ControlBlock* c){
+        this->ptr = p;
+        this->ctrl = c;
+
+        (this->ctrl->strongCount)++;
+
+    }
+
 public:
     explicit SharedPtr(T* p = nullptr){
         this->ptr = p;
@@ -118,6 +126,12 @@ class WeakPtr{
 
         ~WeakPtr(){
             release();
+        }
+
+        SharedPtr<T> lock() const {
+            if(this->ctrl->strongCount <= 0) return SharedPtr<T>();
+
+            return SharedPtr<T>(this->ptr, this->ctrl);
         }
 };
 

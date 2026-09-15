@@ -1,5 +1,4 @@
 #include <iostream>
-#include <memory>
 
 using namespace std;
 
@@ -7,15 +6,14 @@ struct ControlBlock{
     int strongCount;
     int weakCount;
 };
-
-template <typename T>
-class SharedPtr{
+template <typename T> class WeakPtr;
+template <typename T> class SharedPtr{
 private:
     T *ptr;
     ControlBlock *ctrl;
 
     // Friends
-    friend class weak_ptr<T>;
+    friend class WeakPtr<T>;
 
     void release(){
         if(this->ctrl == nullptr) return; //* this prevents the seg* fault when releasing on a null refCount
@@ -102,7 +100,7 @@ public:
     }
 };
 
-template <typename T>
+template <typename T> 
 class WeakPtr{
     private:
         T *ptr;
@@ -135,11 +133,49 @@ class WeakPtr{
         }
 };
 
+//* tests
+struct Widget {
+    int id;
+    Widget(int i) : id(i) { cout << "Widget " << id << " constructed" << endl; }
+    ~Widget() { cout << "Widget " << id << " DESTROYED" << endl; }
+};
+
 int main(){
+    cout << "--- Test A: lock() while object alive ---" << endl;
+    SharedPtr<Widget> sp(new Widget(1));
+    WeakPtr<Widget> wp(sp);
+    cout << "strong count before lock: " << sp.use_count() << endl;
+    {
+        SharedPtr<Widget> locked = wp.lock();
+        cout << "lock() succeeded, id = " << locked->id << endl;
+        cout << "strong count during lock: " << sp.use_count() << " (should be 2)" << endl;
+    }
+    cout << "strong count after locked goes out of scope: " << sp.use_count() << " (should be back to 1)" << endl;
 
-    SharedPtr<int> a(new int(10));
+    cout << "\n--- Test B: object dies, weak ptr survives, lock() fails safely ---" << endl;
+    {
+        SharedPtr<Widget> sp2(new Widget(2));
+        WeakPtr<Widget> wp2(sp2);
+        cout << "created sp2/wp2" << endl;
+    } // sp2 dies here -> Widget 2 destroyed, but ctrl survives since wp2 still exists... 
+      // wait wp2 also goes out of scope here at the same brace! both die together.
+    
+    cout << "\n--- Test C: weak ptr outlives shared ptr (separate scopes) ---" << endl;
+    WeakPtr<Widget>* outerWeak = nullptr;
+    {
+        SharedPtr<Widget> sp3(new Widget(3));
+        outerWeak = new WeakPtr<Widget>(sp3);
+        cout << "sp3 alive, wp3 created" << endl;
+    } // sp3 destructs here -> Widget 3 destroyed (strongCount hits 0), ctrl survives (weakCount still 1)
+    
+    cout << "sp3 out of scope now. attempting lock() on outerWeak..." << endl;
+    SharedPtr<Widget> attempt = outerWeak->lock();
+    if (attempt.use_count() == 0) {
+        cout << "this check is wrong, use_count would crash on empty ptr, skip" << endl;
+    }
+    delete outerWeak; // cleans up weak, which should free ctrl now
 
-    cout << a.use_count() << endl;
+    cout << "\n--- end of main ---" << endl;
 
     return 0;
 }

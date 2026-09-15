@@ -100,6 +100,15 @@ class WeakPtr{
         T *ptr;
         ControlBlock* ctrl;
 
+        void release(){
+            if(this->ctrl == nullptr) return;
+
+            (this->ctrl->weakCount)--;
+            if(this->ctrl->strongCount <= 0 && this->ctrl->weakCount <= 0){
+                delete this->ctrl;
+            }
+        }
+
     public:
         WeakPtr(const SharedPtr<T> & sp){
             this->ptr = sp.ptr;
@@ -107,7 +116,9 @@ class WeakPtr{
             this->ctrl->weakCount++;
         };
 
-
+        ~WeakPtr(){
+            release();
+        }
 };
 
 int main(){

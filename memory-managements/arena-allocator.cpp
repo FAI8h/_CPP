@@ -35,7 +35,7 @@ public:
         }
         T* addr = reinterpret_cast<T *>(buffer + localOffset);
 
-        offset += localOffset + bytesNeeded;
+        offset = localOffset + bytesNeeded;
         return addr;
     }
 };

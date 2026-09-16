@@ -22,13 +22,20 @@ public:
     template<typename T>
     T* allocate(size_t count = 1){
         size_t bytesNeeded = count * sizeof(T);
+        size_t alignment = alignof(T);
 
-        if(bytesNeeded + this->offset > capacity){
+        size_t padding = alignment - (offset % alignment);
+
+        size_t localOffset = this->offset + padding;
+
+        if(alignment == padding) localOffset = this->offset;
+
+        if(bytesNeeded + localOffset > capacity){
             throw std::out_of_range("insufficient capaity");
         }
-        T* addr = reinterpret_cast<T *>(buffer + this->offset);
+        T* addr = reinterpret_cast<T *>(buffer + localOffset);
 
-        offset += bytesNeeded;
+        offset += localOffset + bytesNeeded;
         return addr;
     }
 };

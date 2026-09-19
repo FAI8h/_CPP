@@ -30,7 +30,19 @@ public:
         this->freeListHead = this->buffer;
     }
 
+    T* allocate(){
+        if(this->freeListHead == nullptr){
+            throw std::out_of_range("pool exhausted");
+        }
 
+        void *slot = this->freeListHead;
+
+        void * next = *reinterpret_cast<void **>(slot);
+
+        this->freeListHead = next;
+
+        return reinterpret_cast<T *>(slot);
+    }
 };
 
 int main(){

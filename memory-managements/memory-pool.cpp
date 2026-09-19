@@ -30,6 +30,10 @@ public:
         this->freeListHead = this->buffer;
     }
 
+    ~MemoryPool(){
+        ::operator delete(buffer);
+    }
+
     T* allocate(){
         if(this->freeListHead == nullptr){
             throw std::out_of_range("pool exhausted");
@@ -44,7 +48,7 @@ public:
         return reinterpret_cast<T *>(slot);
     }
 
-    void dealocate(T* ptr){
+    void deallocate(T* ptr){
         char *p = reinterpret_cast<char *>(ptr);
         if (this->buffer > p || this->buffer + this->capacity <= p){
             throw std::range_error("bad pointer access");

@@ -43,6 +43,16 @@ public:
 
         return reinterpret_cast<T *>(slot);
     }
+
+    void dealocate(T* ptr){
+        char *p = reinterpret_cast<char *>(ptr);
+        if (this->buffer > p || this->buffer + this->capacity <= p){
+            throw std::range_error("bad pointer access");
+        }
+
+        *reinterpret_cast<void **>(ptr) = this->freeListHead;
+        this->freeListHead = ptr;
+    }
 };
 
 int main(){

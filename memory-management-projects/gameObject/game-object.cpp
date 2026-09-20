@@ -370,6 +370,25 @@ class WeakPtr{
 
             return SharedPtr<T>(this->ptr, this->ctrl);
         }
+
+        WeakPtr(const WeakPtr& other){
+            this->ptr = other.ptr;
+            this->ctrl = other.ctrl;
+
+            this->ctrl->weakCount++;
+        };
+
+        WeakPtr& operator=(const WeakPtr& other){
+            if(this == &other) return *this;
+
+            release();
+
+            this->ptr = other.ptr;
+            this->ctrl = other.ctrl;
+            this->ctrl->weakCount++;
+
+            return *this;
+        }
 };
 
 //* --------------------------------game object---------------------------------------

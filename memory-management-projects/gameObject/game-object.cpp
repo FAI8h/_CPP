@@ -408,6 +408,15 @@ public:
     ~GameObject(){
         cout << name << " Destructed\n";
     }
+
+    void addChild(const SharedPtr<GameObject>& self, const SharedPtr<GameObject>& child){
+        child->parent = self;
+
+        this->children.push_back(child);
+    };
+
+    string getName() const { return this->name; };
+    WeakPtr<GameObject> getParent() const { return this->parent; };
 };
 
 int main(){

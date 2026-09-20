@@ -352,6 +352,9 @@ class WeakPtr{
         }
 
     public:
+        
+        WeakPtr(): ptr(nullptr), ctrl(nullptr) {}
+
         WeakPtr(const SharedPtr<T> & sp){
             this->ptr = sp.ptr;
             this->ctrl = sp.ctrl;

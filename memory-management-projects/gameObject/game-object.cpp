@@ -420,7 +420,7 @@ public:
 };
 
 int main(){
-    GameObject go("faith");
+    GameObject Obj1("faith");
 
     return 0;
 }

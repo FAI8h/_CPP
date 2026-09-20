@@ -1,6 +1,7 @@
 #include <exception>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 using namespace  std;
 
@@ -395,24 +396,22 @@ class WeakPtr{
 
 class GameObject{
 private:
+    string name;
     MyVector<SharedPtr<GameObject>> children;
     WeakPtr<GameObject> parent;
 
 public:
+    GameObject(string name) : name(name){
+        cout << name << " Constructed\n";
+    }
+    
+    ~GameObject(){
+        cout << name << " Destructed\n";
+    }
 };
 
 int main(){
-    MyVector<int> v(0);
-
-    v.push_back(10);
-
-    auto it = v.begin();
-    auto end_it = v.end();
-    for (; it != end_it; ++it) {
-        auto& x = *it;
-        cout << x << " ";
-    }
-    cout << endl;
+    GameObject go("faith");
 
     return 0;
 }

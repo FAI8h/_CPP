@@ -263,7 +263,9 @@ private:
         if(this->ctrl->strongCount <= 0){
 
             bool shouldFreeCtrl = (this->ctrl->weakCount <= 0);
-            this->ctrl->deleter(this->ptr);
+            
+            std::function<void(T *)> deleter = this->ctrl->deleter;
+            deleter(this->ptr);
 
             if(shouldFreeCtrl){
                 delete this->ctrl;

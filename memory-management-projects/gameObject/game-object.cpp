@@ -485,27 +485,55 @@ public:
     WeakPtr<GameObject> getParent() const { return this->parent; };
 };
 
-int main(){
-    cout << "----------------- Buildng Tree --------------------" << endl;
-    SharedPtr<GameObject> root(new GameObject("root"));
-    SharedPtr<GameObject> childA(new GameObject("childA"));
-    SharedPtr<GameObject> childB(new GameObject("childB"));
-
-    cout << "root strong count before child : " << root.use_count() << endl;
+//? --------------------- Global Functions -----------------------------
+template<typename T, typename... Args>
+SharedPtr<T> makeFromPool(MemoryPool<T>& pool, Args&&... args){
+    T *slot = pool.allocate();
     
+    new (slot) T(std::forward<Args>(args)...);
+
+    return SharedPtr<T>(
+        slot,
+        [&pool](T* p){
+            p->~T();
+            pool.deallocate(p);
+        });
+}
+
+int main(){
+    // cout << "----------------- Buildng Tree --------------------" << endl;
+    // SharedPtr<GameObject> root(new GameObject("root"));
+    // SharedPtr<GameObject> childA(new GameObject("childA"));
+    // SharedPtr<GameObject> childB(new GameObject("childB"));
+
+    // cout << "root strong count before child : " << root.use_count() << endl;
+    
+    // root->addChild(root, childA);
+    // root->addChild(root, childB);
+    
+    // cout << "root strong count after adding 2 child : " << root.use_count() << " (should still be 1, children only hold weak refrence to root)" << endl;
+
+    // WeakPtr<GameObject> parentOfA = childA->getParent();
+    // cout << "childA's weak-tracked weakCount on root's ctrl : " << parentOfA.weak_count_debug() << endl;
+
+    // SharedPtr<GameObject> lockedParent = parentOfA.lock();
+    // cout << "locked parent name : " << lockedParent->getName() << endl;
+
+    // cout << "\n--- checking ref counts before scope ends (destructors will fire naturally after this) ---\n";
+    // cout << "childA still has valid parent lock: " << (parentOfA.lock().use_count() > 0 ? "yes" : "no") << endl;
+
+    cout << "--- pool-backed GameObject test ---\n";
+    MemoryPool<GameObject> pool(5);
+
+    SharedPtr<GameObject> root = makeFromPool(pool, "poolRoot");
+    SharedPtr<GameObject> childA = makeFromPool(pool, "poolChildA");
+    SharedPtr<GameObject> childB = makeFromPool(pool, "poolChildB");
+
     root->addChild(root, childA);
     root->addChild(root, childB);
-    
-    cout << "root strong count after adding 2 child : " << root.use_count() << " (should still be 1, children only hold weak refrence to root)" << endl;
 
-    WeakPtr<GameObject> parentOfA = childA->getParent();
-    cout << "childA's weak-tracked weakCount on root's ctrl : " << parentOfA.weak_count_debug() << endl;
-
-    SharedPtr<GameObject> lockedParent = parentOfA.lock();
-    cout << "locked parent name : " << lockedParent->getName() << endl;
-
-    cout << "\n--- checking ref counts before scope ends (destructors will fire naturally after this) ---\n";
-    cout << "childA still has valid parent lock: " << (parentOfA.lock().use_count() > 0 ? "yes" : "no") << endl;
+    cout << "root use_count: " << root.use_count() << endl;
+    cout << "--- end of scope, destructors fire ---\n";
 
     return 0;
 }

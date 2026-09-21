@@ -1,7 +1,9 @@
 #include <exception>
+#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <functional>
 
 using namespace  std;
 
@@ -239,15 +241,17 @@ public:
     }
 };
 
+template<typename T>
 struct ControlBlock{
     int strongCount;
     int weakCount;
+    std::function<void(T *)> deleter;
 };
 template <typename T> class WeakPtr;
 template <typename T> class SharedPtr{
 private:
     T *ptr;
-    ControlBlock *ctrl;
+    ControlBlock<T> *ctrl;
 
     // Friends
     friend class WeakPtr<T>;
@@ -259,8 +263,8 @@ private:
         if(this->ctrl->strongCount <= 0){
 
             bool shouldFreeCtrl = (this->ctrl->weakCount <= 0);
-            delete this->ptr;
-            
+            this->ctrl->deleter(this->ptr);
+
             if(shouldFreeCtrl){
                 delete this->ctrl;
             }
@@ -268,7 +272,7 @@ private:
         }
     }
 
-    SharedPtr(T* p, ControlBlock* c){
+    SharedPtr(T* p, ControlBlock<T>* c){
         this->ptr = p;
         this->ctrl = c;
 
@@ -277,9 +281,9 @@ private:
     }
 
 public:
-    explicit SharedPtr(T* p = nullptr){
+    explicit SharedPtr(T* p = nullptr, std::function<void(T*)> deleter = [](T* ptr){delete ptr;}){
         this->ptr = p;
-        this->ctrl = new ControlBlock{1, 0};
+        this->ctrl = new ControlBlock<T>{1, 0, deleter};
     }
 
     ~SharedPtr() { release(); };
@@ -344,7 +348,7 @@ template <typename T>
 class WeakPtr{
     private:
         T *ptr;
-        ControlBlock* ctrl;
+        ControlBlock<T>* ctrl;
 
         void release(){
             if(this->ctrl == nullptr) return;

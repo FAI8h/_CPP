@@ -259,12 +259,12 @@ private:
         if(this->ctrl->strongCount <= 0){
 
             bool shouldFreeCtrl = (this->ctrl->weakCount <= 0);
+            delete this->ptr;
             
             if(shouldFreeCtrl){
                 delete this->ctrl;
             }
 
-            delete this->ptr;
         }
     }
 

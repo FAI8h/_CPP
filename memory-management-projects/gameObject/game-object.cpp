@@ -501,11 +501,11 @@ public:
 
 //* Arena Allocator Adapter
 template<typename T>
-class ArenaAllocatorAdaptor{
+class ArenaAllocatorAdapter{
 private:
     Arena &arena;
 public:
-    explicit ArenaAllocatorAdaptor(Arena &a) : arena(a) {}
+    explicit ArenaAllocatorAdapter(Arena &a) : arena(a) {}
 
     T* allocate(size_t count){
         return arena.allocate<T>(count);
@@ -568,39 +568,45 @@ SharedPtr<T> makeFromPool(MemoryPool<T>& pool, Args&&... args){
 }
 
 int main(){
-    // cout << "----------------- Buildng Tree --------------------" << endl;
-    // SharedPtr<GameObject> root(new GameObject("root"));
-    // SharedPtr<GameObject> childA(new GameObject("childA"));
-    // SharedPtr<GameObject> childB(new GameObject("childB"));
-
-    // cout << "root strong count before child : " << root.use_count() << endl;
-    
-    // root->addChild(root, childA);
-    // root->addChild(root, childB);
-    
-    // cout << "root strong count after adding 2 child : " << root.use_count() << " (should still be 1, children only hold weak refrence to root)" << endl;
-
-    // WeakPtr<GameObject> parentOfA = childA->getParent();
-    // cout << "childA's weak-tracked weakCount on root's ctrl : " << parentOfA.weak_count_debug() << endl;
-
-    // SharedPtr<GameObject> lockedParent = parentOfA.lock();
-    // cout << "locked parent name : " << lockedParent->getName() << endl;
-
-    // cout << "\n--- checking ref counts before scope ends (destructors will fire naturally after this) ---\n";
-    // cout << "childA still has valid parent lock: " << (parentOfA.lock().use_count() > 0 ? "yes" : "no") << endl;
-
-    cout << "--- pool-backed GameObject test ---\n";
-    MemoryPool<GameObject> pool(5);
-
-    SharedPtr<GameObject> root = makeFromPool(pool, "poolRoot");
-    SharedPtr<GameObject> childA = makeFromPool(pool, "poolChildA");
-    SharedPtr<GameObject> childB = makeFromPool(pool, "poolChildB");
-
+    // Variant 1: plain MyVector, default MyAllocator
+    MyVector<int> plainVec;
+    plainVec.push_back(1);
+    plainVec.push_back(2);
+    plainVec.push_back(3);
+    plainVec.push_back(4); // forces grow()
+    cout << "plainVec: ";
+    for (auto& v : plainVec) cout << v << " ";
+    cout << "\n";
+ 
+    // Variant 2: Arena-backed MyVector
+    Arena arena(4096);
+    ArenaAllocatorAdapter<int> arenaAlloc(arena);
+    MyVector<int, ArenaAllocatorAdapter<int>> arenaVec(2, arenaAlloc);
+    arenaVec.push_back(10);
+    arenaVec.push_back(20);
+    arenaVec.push_back(30); // forces grow() -> old block leaked in arena, expected
+    cout << "arenaVec: ";
+    for (auto& v : arenaVec) cout << v << " ";
+    cout << "\n";
+ 
+    MemoryPool<GameObject> pool(8);
+ 
+    SharedPtr<GameObject> root = makeFromPool(pool, "root");
+    SharedPtr<GameObject> childA = makeFromPool(pool, "childA");
+    SharedPtr<GameObject> childB = makeFromPool(pool, "childB");
+ 
     root->addChild(root, childA);
     root->addChild(root, childB);
-
-    cout << "root use_count: " << root.use_count() << endl;
+ 
+    cout << "root use_count: " << root.use_count() << "\n";
+    cout << "childA use_count: " << childA.use_count() << "\n";
+ 
+    WeakPtr<GameObject> parentOfA = childA->getParent();
+    SharedPtr<GameObject> lockedParent = parentOfA.lock();
+    cout << "childA's parent (locked): " << lockedParent->getName() << "\n";
+ 
     cout << "--- end of scope, destructors fire ---\n";
+    return 0;
 
     return 0;
 }

@@ -607,6 +607,4 @@ int main(){
  
     cout << "--- end of scope, destructors fire ---\n";
     return 0;
-
-    return 0;
 }

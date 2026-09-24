@@ -460,6 +460,45 @@ public:
     }
 };
 
+//* Arena Allocator
+class Arena{
+private:
+    char *buffer; // raw memory block
+    size_t capacity; // total size of the block
+    size_t offset; // how much has been used
+
+public:
+    explicit Arena(size_t size){
+        this->buffer = static_cast<char* >(::operator new(size));
+        this->capacity = size;
+        this->offset = 0;
+    }
+
+    ~Arena(){
+        ::operator delete(buffer);
+    }
+
+    template<typename T>
+    T* allocate(size_t count = 1){
+        size_t bytesNeeded = count * sizeof(T);
+        size_t alignment = alignof(T);
+
+        size_t padding = alignment - (offset % alignment);
+
+        size_t localOffset = this->offset + padding;
+
+        if(alignment == padding) localOffset = this->offset;
+
+        if(bytesNeeded + localOffset > capacity){
+            throw std::out_of_range("insufficient capaity");
+        }
+        T* addr = reinterpret_cast<T *>(buffer + localOffset);
+
+        offset = localOffset + bytesNeeded;
+        return addr;
+    }
+};
+
 //* --------------------------------game object---------------------------------------
 
 class GameObject{

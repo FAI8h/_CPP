@@ -34,10 +34,10 @@ class MyAllocator{
     }
 };
 
-template<typename T>
+template<typename T, typename Alloc = MyAllocator<T>>
 class MyVector {
 private:
-    MyAllocator<T> allocator;
+    Alloc allocator;
     T *data;
     size_t size;
     size_t capacity;
@@ -79,8 +79,8 @@ private:
     }
 
 public:
-    MyVector(int capacity = 2) 
-        : size(0){
+    MyVector(int capacity = 2, Alloc alloc = Alloc()) 
+        : allocator(alloc), size(0) {
             if (capacity < 1){
                 throw std::invalid_argument("capacity must be a positive");
             }

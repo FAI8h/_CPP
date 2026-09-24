@@ -499,6 +499,32 @@ public:
     }
 };
 
+//* Arena Allocator Adapter
+template<typename T>
+class ArenaAllocatorAdaptor{
+private:
+    Arena &arena;
+public:
+    explicit ArenaAllocatorAdaptor(Arena &a) : arena(a) {}
+
+    T* allocate(size_t count){
+        return arena.allocate<T>(count);
+    };
+
+    template<typename... Args>
+    void construct(T* ptr, Args &&... args){
+        new(ptr) T(std::forward<Args>(args)...);
+    }
+
+    void destroy(T* ptr){
+        ptr->~T();
+    }
+
+    void deallocate(T* ptr){
+
+    }
+};
+
 //* --------------------------------game object---------------------------------------
 
 class GameObject{

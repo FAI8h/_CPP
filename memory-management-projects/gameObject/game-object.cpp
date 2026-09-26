@@ -526,13 +526,20 @@ public:
 };
 
 //* --------------------------------game object---------------------------------------
-
+template<typename T>
+class EnableSharedFromThis{
+protected:
+    WeakPtr<T> weakSelf;
+public:
+    SharedPtr<T> shared_from_this(){
+        return weakSelf.lock();
+    }
+};
 class GameObject{
 private:
     string name;
     MyVector<SharedPtr<GameObject>> children;
     WeakPtr<GameObject> parent;
-
 public:
     GameObject(string name) : name(name){
         cout << name << " Constructed\n";
@@ -553,8 +560,9 @@ public:
 };
 
 //? --------------------- Global Functions -----------------------------
-template<typename T, typename... Args>
-SharedPtr<T> makeFromPool(MemoryPool<T>& pool, Args&&... args){
+template <typename T, typename... Args>
+SharedPtr<T> makeFromPool(MemoryPool<T> &pool, Args &&...args)
+{
     T *slot = pool.allocate();
     
     new (slot) T(std::forward<Args>(args)...);

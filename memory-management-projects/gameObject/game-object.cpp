@@ -248,6 +248,7 @@ struct ControlBlock{
     std::function<void(T *)> deleter;
 };
 template <typename T> class WeakPtr;
+template<typename T> class EnableSharedFromThis;
 template <typename T> class SharedPtr{
 private:
     T *ptr;
@@ -286,6 +287,9 @@ public:
     explicit SharedPtr(T* p = nullptr, std::function<void(T*)> deleter = [](T* ptr){delete ptr;}){
         this->ptr = p;
         this->ctrl = new ControlBlock<T>{1, 0, deleter};
+        if constexpr (std::is_base_of<EnableSharedFromThis<T>, T>::value){
+            p->weakSelf = *this;
+        }
     }
 
     ~SharedPtr() { release(); };
@@ -528,6 +532,7 @@ public:
 //* --------------------------------game object---------------------------------------
 template<typename T>
 class EnableSharedFromThis{
+    friend class SharedPtr<T>;
 protected:
     WeakPtr<T> weakSelf;
 public:
@@ -535,7 +540,7 @@ public:
         return weakSelf.lock();
     }
 };
-class GameObject{
+class GameObject : public EnableSharedFromThis<GameObject>{
 private:
     string name;
     MyVector<SharedPtr<GameObject>> children;

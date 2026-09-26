@@ -554,9 +554,8 @@ public:
         cout << name << " Destructed\n";
     }
 
-    void addChild(const SharedPtr<GameObject>& self, const SharedPtr<GameObject>& child){
-        child->parent = self;
-
+    void addChild(const SharedPtr<GameObject>& child){
+        child->parent = shared_from_this();
         this->children.push_back(child);
     };
 
@@ -608,8 +607,8 @@ int main(){
     SharedPtr<GameObject> childA = makeFromPool(pool, "childA");
     SharedPtr<GameObject> childB = makeFromPool(pool, "childB");
  
-    root->addChild(root, childA);
-    root->addChild(root, childB);
+    root->addChild(childA);
+    root->addChild(childB);
  
     cout << "root use_count: " << root.use_count() << "\n";
     cout << "childA use_count: " << childA.use_count() << "\n";

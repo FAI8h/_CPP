@@ -606,9 +606,11 @@ int main(){
     SharedPtr<GameObject> root = makeFromPool(pool, "root");
     SharedPtr<GameObject> childA = makeFromPool(pool, "childA");
     SharedPtr<GameObject> childB = makeFromPool(pool, "childB");
+    SharedPtr<GameObject> childC = makeFromPool(pool, "childC");
  
     root->addChild(childA);
     root->addChild(childB);
+    root->addChild(childC);
  
     cout << "root use_count: " << root.use_count() << "\n";
     cout << "childA use_count: " << childA.use_count() << "\n";
